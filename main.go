@@ -9,11 +9,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"taskmanagerserver.com/api/database"
+	"taskmanagerserver.com/api/models"
 )
 
 func migrate() {
 	log.Println("Running Migation")
-	//database.DB.AutoMigrate(&models.Project{}, &models.Task{})
+	database.DB.AutoMigrate(&models.User{}, &models.ContactMethod{})
 }
 
 func main() {

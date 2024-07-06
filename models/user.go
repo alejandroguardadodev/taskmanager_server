@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"taskmanagerserver.com/api/validation"
+)
 
 type User struct {
 	ID         uint   `json:"id" gorm:"primaryKey;autoIncrement"`
@@ -26,4 +30,15 @@ func (u User) GetDictionary() *Dictionary {
 	}
 
 	return &dic
+}
+
+func (u User) Validate() (*[]validation.ErrField, error) {
+
+	if err := validation.Validate.StructExcept(u, "User"); err != nil {
+		errFields := validation.GetValidateInformation(err, u)
+
+		return errFields, err
+	}
+
+	return nil, nil
 }

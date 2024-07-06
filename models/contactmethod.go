@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"taskmanagerserver.com/api/models/customtypes"
+	"taskmanagerserver.com/api/validation"
 )
 
 type ContactMethod struct {
@@ -28,4 +29,21 @@ func (cm ContactMethod) GetDictionary() *Dictionary {
 	}
 
 	return &dic
+}
+
+func (cm ContactMethod) Validate() (Dictionary, error) {
+
+	if err := validation.Validate.StructExcept(cm, "ContactMethod"); err != nil {
+		errFields := validation.GetValidateInformation(err, cm)
+
+		errs := Dictionary{}
+
+		for _, field := range *errFields {
+			errs[field.FieldName] = field.ErrorTitle
+		}
+
+		return errs, err
+	}
+
+	return nil, nil
 }

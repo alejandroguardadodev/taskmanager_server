@@ -31,18 +31,12 @@ func (cm ContactMethod) GetDictionary() *Dictionary {
 	return &dic
 }
 
-func (cm ContactMethod) Validate() (Dictionary, error) {
+func (cm ContactMethod) Validate() (*[]validation.ErrField, error) {
 
-	if err := validation.Validate.StructExcept(cm, "ContactMethod"); err != nil {
+	if err := validation.Validate.StructExcept(cm, "User"); err != nil {
 		errFields := validation.GetValidateInformation(err, cm)
 
-		errs := Dictionary{}
-
-		for _, field := range *errFields {
-			errs[field.FieldName] = field.ErrorTitle
-		}
-
-		return errs, err
+		return errFields, err
 	}
 
 	return nil, nil

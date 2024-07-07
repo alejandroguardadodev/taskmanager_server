@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	ID         uint   `json:"id" gorm:"primaryKey;autoIncrement"`
-	Username   string `jsong:"username" gorm:"unique" validate:"required"`
+	Username   string `json:"username" gorm:"not null;unique" validate:"required"`
 	FirstName  string `json:"firstname" gorm:"not null;type:varchar(100)"`
 	MiddleName string `json:"middlename" gorm:"type:varchar(100)"`
 	LastName   string `json:"lastname" gorm:"type:varchar(200)"`
@@ -34,7 +34,7 @@ func (u User) GetDictionary() *Dictionary {
 
 func (u User) Validate() (*[]validation.ErrField, error) {
 
-	if err := validation.Validate.StructExcept(u, "User"); err != nil {
+	if err := validation.Validate.Struct(u); err != nil {
 		errFields := validation.GetValidateInformation(err, u)
 
 		return errFields, err

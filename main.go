@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"taskmanagerserver.com/api/database"
 	"taskmanagerserver.com/api/models"
+	"taskmanagerserver.com/api/routes"
 	"taskmanagerserver.com/api/validation"
 )
 
@@ -35,6 +36,8 @@ func main() {
 	url := fmt.Sprintf(":%s", os.Getenv("PORT"))
 
 	validation.ValidationInit()
+
+	routes.Register(app)
 
 	log.Fatal(app.Listen(url))
 }

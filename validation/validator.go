@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"log"
 	"reflect"
 
 	"github.com/go-playground/validator/v10"
@@ -44,9 +45,11 @@ func GetValidateInformation(err error, element any) *[]ErrField {
 	for _, err := range err.(validator.ValidationErrors) {
 
 		var value string
+		log.Println("err", err)
 
-		if val, ok := err.Value().(string); ok {
-			value = val
+		if valx, ok := err.Value().(string); ok {
+			log.Println("val", valx)
+			value = valx
 		}
 
 		errFields = append(errFields, ErrField{

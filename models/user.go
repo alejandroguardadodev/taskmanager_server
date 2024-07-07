@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"taskmanagerserver.com/api/validation"
@@ -30,6 +31,12 @@ func (u User) GetDictionary() *Dictionary {
 	}
 
 	return &dic
+}
+
+func (u *User) Fix() {
+	if len(u.Username) > 0 {
+		u.Username = strings.ToLower(u.Username)
+	}
 }
 
 func (u User) Validate() (*[]validation.ErrField, error) {

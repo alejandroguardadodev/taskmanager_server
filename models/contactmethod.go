@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"taskmanagerserver.com/api/models/customtypes"
@@ -29,6 +30,12 @@ func (cm ContactMethod) GetDictionary() *Dictionary {
 	}
 
 	return &dic
+}
+
+func (cm *ContactMethod) Fix() {
+	if len(cm.Contact) > 0 {
+		cm.Contact = strings.ToLower(cm.Contact)
+	}
 }
 
 func (cm ContactMethod) Validate() (*[]validation.ErrField, error) {

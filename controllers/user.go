@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 	"taskmanagerserver.com/api/database"
 	"taskmanagerserver.com/api/models"
 	"taskmanagerserver.com/api/tools"
@@ -97,6 +100,69 @@ func AuthRegister(c *fiber.Ctx) error {
 
 	if tokenErr != nil {
 		log.Println("User Register Token ERR:", tokenErr)
+
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"err_type": types.ERR_TYPE_MESSAGE,
+			"message":  "Unexpected error",
+		})
+	}
+
+	// SEND TOKEN
+	return c.Status(http.StatusOK).JSON(fiber.Map{
+		"user":  user.GetDictionaryWithPrimaryContact(*contact),
+		"token": token,
+	})
+}
+
+func AuthLogin(c *fiber.Ctx) error {
+	var user *models.User
+	var contact *models.ContactMethod
+
+	// GET CONTACT METHOD DATA
+	if err := c.BodyParser(&contact); err != nil {
+		log.Println("User Login Contact Method BodyParse ERR:", err.Error())
+		return c.Status(http.StatusBadRequest).SendString(types.ERR_MSG_BAR_BODY_PARSE)
+	}
+
+	contact.Primary = true // SHOULD BE PRIMARY
+
+	if err := database.DB.Preload("User").Where(contact).First(&contact).Error; err != nil {
+		log.Println("User Login Contact Method ERR", err)
+
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"err_type": types.ERR_TYPE_BY_MULTIPLE_FIELDS,
+			"fields": fiber.Map{
+				"contact":  fmt.Sprintf("The %s or password is incorrect.", strings.ToLower(contact.Type.String())),
+				"password": fmt.Sprintf("The %s or password is incorrect.", strings.ToLower(contact.Type.String())),
+			},
+		})
+	}
+
+	user = &contact.User
+
+	dat := c.Locals("requestbody").(map[string]string)
+	password := dat["password"]
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		log.Println("User Login Password ERR", err)
+
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"err_type": types.ERR_TYPE_BY_MULTIPLE_FIELDS,
+			"fields": fiber.Map{
+				"contact":  fmt.Sprintf("The %s or password is incorrect.", strings.ToLower(contact.Type.String())),
+				"password": fmt.Sprintf("The %s or password is incorrect.", strings.ToLower(contact.Type.String())),
+			},
+		})
+	}
+
+	// USER LOG
+	ControllRegisterUserAccountLog(user.ID, types.LOG_MSG_ACCOUNT_LOGIN)
+
+	// CREATE USER TOKEN
+	token, tokenErr := tools.GenerateJWTToken(user.ID, contact.Contact, contact.Type.String())
+
+	if tokenErr != nil {
+		log.Println("User Login Token ERR:", tokenErr)
 
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"err_type": types.ERR_TYPE_MESSAGE,

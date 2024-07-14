@@ -36,14 +36,17 @@ func (cm *ContactMethod) Fix() {
 	if len(cm.Contact) > 0 {
 		cm.Contact = strings.ToLower(cm.Contact)
 	}
+
+	if len(cm.Type) > 0 {
+		cm.Type.Scan(strings.ToUpper(cm.Type.String()))
+	}
 }
 
-func (cm ContactMethod) Validate() (*[]validation.ErrField, error) {
-
+func (cm ContactMethod) Validate() (Dictionary, error) {
 	if err := validation.Validate.StructExcept(cm, "User"); err != nil {
-		errFields := validation.GetValidateInformation(err, cm)
+		errors := validation.GetValidateInformation(err, cm)
 
-		return errFields, err
+		return DictionarySetup(errors), err
 	}
 
 	return nil, nil

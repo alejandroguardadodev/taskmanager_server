@@ -33,18 +33,31 @@ func (u User) GetDictionary() *Dictionary {
 	return &dic
 }
 
+func (u User) GetDictionaryWithPrimaryContact(cm ContactMethod) *Dictionary {
+	dic := Dictionary{
+		"id":              u.ID,
+		"username":        u.Username,
+		"firstname":       u.FirstName,
+		"middlename":      u.MiddleName,
+		"lastname":        u.LastName,
+		"created_at":      u.CreatedAt,
+		"primary_contact": cm.GetDictionary(),
+	}
+
+	return &dic
+}
+
 func (u *User) Fix() {
 	if len(u.Username) > 0 {
 		u.Username = strings.ToLower(u.Username)
 	}
 }
 
-func (u User) Validate() (*[]validation.ErrField, error) {
-
+func (u User) Validate() (Dictionary, error) {
 	if err := validation.Validate.Struct(u); err != nil {
-		errFields := validation.GetValidateInformation(err, u)
+		errors := validation.GetValidateInformation(err, u)
 
-		return errFields, err
+		return DictionarySetup(errors), err
 	}
 
 	return nil, nil

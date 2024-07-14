@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"log"
 	"reflect"
 
 	"github.com/go-playground/validator/v10"
@@ -37,27 +36,14 @@ func getJsonTag(fieldname string, val reflect.Value) string {
 	return fieldname
 }
 
-func GetValidateInformation(err error, element any) *[]ErrField {
+func GetValidateInformation(err error, element any) map[string]string {
 
-	errFields := []ErrField{}
-	val := reflect.ValueOf(element)
+	fields := map[string]string{}
+	elemtReflect := reflect.ValueOf(element)
 
 	for _, err := range err.(validator.ValidationErrors) {
-
-		var value string
-		log.Println("err", err)
-
-		if valx, ok := err.Value().(string); ok {
-			log.Println("val", valx)
-			value = valx
-		}
-
-		errFields = append(errFields, ErrField{
-			FieldName:  getJsonTag(err.Field(), val),
-			ErrorTitle: err.ActualTag(),
-			Value:      value,
-		})
+		fields[getJsonTag(err.Field(), elemtReflect)] = err.ActualTag()
 	}
 
-	return &errFields
+	return fields
 }
